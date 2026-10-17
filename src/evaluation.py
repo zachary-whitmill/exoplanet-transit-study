@@ -20,9 +20,10 @@ def calculate_snr(lc: lk.LightCurve, period: float, t0: float, duration: float) 
     if len(flux_in) == 0 or len(flux_out) == 0:
         return 0.0
 
-    # Calculate transit depth (delta) and out-of-transit scatter (sigma)
-    depth = np.median(flux_out) - np.median(flux_in)
-    sigma_out = np.std(flux_out)
+    # Calculate transit depth (delta) and robust out-of-transit scatter (MAD scaled to sigma)
+    med_out = np.median(flux_out)
+    depth = med_out - np.median(flux_in)
+    sigma_out = 1.4826 * np.median(np.abs(flux_out - med_out))
     n_in = len(flux_in)
 
     if sigma_out == 0:

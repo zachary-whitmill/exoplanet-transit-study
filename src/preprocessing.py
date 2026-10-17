@@ -34,8 +34,6 @@ def filter_savitzky_golay(
 
 
 
-
-
 def filter_gaussian_process(
     lc: lk.LightCurve,
     rho: float = 2.0,
@@ -47,7 +45,6 @@ def filter_gaussian_process(
     """
     flatten a light curve using Gaussian Process (GP) detrending via celerite2.
     GP regression often outperforms SG in accuracy due to GP incorporating probability and covariance
-
 
     parameters:
 
@@ -79,14 +76,26 @@ def filter_gaussian_process(
     median_flux = np.nanmedian(flux)
     y = flux - median_flux
 
-    # Initialize celerite2 SHO kernel
-    kernel_sigma = np.nanstd(y)
+    # Mask downward outliers (> 3 sigma below median) so the GP only fits
+    # out-of-transit stellar variability and does not absorb transit dips
+    mad_std = 1.4826 * np.nanmedian(np.abs(y))
+    oot_mask = y > (-3.0 * mad_std)
+    if np.sum(oot_mask) < 10:
+        oot_mask = np.ones_like(y, dtype=bool)
+
+    # Estimate white-noise jitter from point-to-point scatter and add to diagonal variance
+    # (In celerite2, diagonal jitter is passed via `diag` in gp.compute rather than a separate JitterTerm)
+    jitter = 1.4826 * np.nanmedian(np.abs(np.diff(y[oot_mask]))) / np.sqrt(2.0)
+    diag = yerr**2 + jitter**2
+
+    # Initialize celerite2 SHO kernel and condition only on out-of-transit points
+    kernel_sigma = np.nanstd(y[oot_mask])
     kernel = terms.SHOTerm(sigma=kernel_sigma, rho=rho, Q=Quality)
     gp = c2.GaussianProcess(kernel, mean=0.0)
-    gp.compute(x, yerr=yerr)
+    gp.compute(x[oot_mask], diag=diag[oot_mask])
 
-    # Predict the stellar baseline trend
-    trend = gp.predict(y) + median_flux
+    # Predict the stellar baseline trend across all timestamps (interpolating over transits)
+    trend = gp.predict(y[oot_mask], t=x) + median_flux
 
     # Multiplicative detrending (flux / trend)
     flat_flux = flux / trend

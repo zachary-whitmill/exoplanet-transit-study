@@ -1,11 +1,11 @@
-"""Module for fetching and saving transit light curves using Lightkurve."""
+"""Module for downloading and saving transit light curves using Lightkurve."""
 
 import os
 import lightkurve as lk
 
 
 
-def download_lightcurve(target_name: str, cache_dir = "ExoplanetTransit/data/"):
+def download_lightcurve(target_name: str, cache_dir: str = "data", exptime: int = 120):
     """Downloads and caches the light curve data for a specific exoplanet transit event."""
 
     os.makedirs(cache_dir, exist_ok=True) # creating cache directory if it doesn't exist
@@ -17,7 +17,7 @@ def download_lightcurve(target_name: str, cache_dir = "ExoplanetTransit/data/"):
         print(f"Loading cached light curve for {target_name} from {cache_path}")
         return lk.read(cache_path)
 
-    search_result = lk.search_lightcurve(target_name, author="SPOC")
+    search_result = lk.search_lightcurve(target_name, author="SPOC", exptime=exptime)
 
     if len(search_result) == 0:
         raise ValueError(f"No light curve data found for target: {target_name}")

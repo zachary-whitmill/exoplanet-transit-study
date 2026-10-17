@@ -1,0 +1,4 @@
+celerite 2 is a library that allows for the application of a gaussian process filter 
+
+.terms is a module that contains a libary of patterns (called kernals) so there is a kernal for each type of pattern 
+such as ocillations, rotations, smooth trends (exponential)

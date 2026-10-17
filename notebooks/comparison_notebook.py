@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from src.ingestion import fetch_lightcurve
 from src.preprocessing import detrend_savgol, detrend_gp
-from src.search import run_bls
+from ExoplanetTransitStudy.src.transit import run_bls
 from src.evaluation import calculate_snr
 
 # 1. Test Ingestion

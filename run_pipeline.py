@@ -1,7 +1,7 @@
 # run_pipeline.py
 from src.ingestion import download_lightcurve
 from src.preprocessing import filter_savitzky_golay, filter_gaussian_process
-from src.search import run_bls, run_tls
+from ExoplanetTransitStudy.src.transit import run_bls, run_tls
 from src.evaluation import evaluate_algorithms
 
 # 1. Test Ingestion

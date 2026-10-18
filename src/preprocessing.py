@@ -5,6 +5,10 @@ import lightkurve as lk
 import celerite2 as c2
 from celerite2 import terms
 
+# celerite 2 is a library that allows for the application of a gaussian process filter 
+# .terms is a module that contains a libary of patterns (called kernals) so there is a kernal for each type of pattern 
+# such as ocillations, rotations, smooth trends (exponential)
+
 def filter_savitzky_golay(
     lc: lk.LightCurve,
     window_length: int = 101,

@@ -1,8 +1,8 @@
+"""Module for running transit searches on light curves using Box Least Squares and Transit Least Squares methods."""
+
 import lightkurve as lk
 import numpy as np
 from transitleastsquares import transitleastsquares as tls
-
-
 
 def run_bls(lc: lk.LightCurve, min_period: float = 0.5, max_period: float = 20.0):
     """

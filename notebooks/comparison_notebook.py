@@ -1,3 +1,5 @@
+""""""
+
 import matplotlib.pyplot as plt
 from src.ingestion import download_lightcurve
 from src.preprocessing import filter_savitzky_golay, filter_gaussian_process

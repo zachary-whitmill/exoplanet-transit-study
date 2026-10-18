@@ -5,8 +5,6 @@ import lightkurve as lk
 import celerite2 as c2
 from celerite2 import terms
 
-
-
 def filter_savitzky_golay(
     lc: lk.LightCurve,
     window_length: int = 101,
@@ -31,8 +29,6 @@ def filter_savitzky_golay(
     cleaned_lc = lc.remove_nans().remove_outliers(sigma_upper=sigma_upper,sigma_lower=sigma_lower)
     flattened_lc = cleaned_lc.flatten(window_length=window_length, polyorder=polynomial_order)
     return flattened_lc
-
-
 
 def filter_gaussian_process(
     lc: lk.LightCurve,

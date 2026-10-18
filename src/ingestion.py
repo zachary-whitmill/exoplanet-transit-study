@@ -6,7 +6,17 @@ import lightkurve as lk
 
 
 def download_lightcurve(target_name: str, cache_dir: str = "data", exptime: int = 120):
-    """Downloads and caches the light curve data for a specific exoplanet transit event."""
+    """
+    Downloads and caches the light curve data for a specific exoplanet transit event.
+    
+    parameters:
+    target_name: str
+        name of the host star containing the transiting exoplanet on the MAST archive
+    chache_dir: str
+        defines the location where downloaded lightcurves are stored
+    exptime: int
+        defines the duration in seconds of the transit requested from the archive
+    """
 
     os.makedirs(cache_dir, exist_ok=True) # creating cache directory if it doesn't exist
 

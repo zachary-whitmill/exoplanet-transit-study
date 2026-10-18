@@ -23,7 +23,7 @@ def run_bls(lc: lk.LightCurve, min_period: float = 0.5, max_period: float = 20.0
 
 def run_tls(lc: lk.LightCurve):
     """
-    Physical limb-darkened model search via Transit Least Squares.
+    limb-darkened model search via Transit Least Squares.
     """
     time = np.asarray(lc.time.value, dtype=float)
     flux = np.asarray(lc.flux.value, dtype=float)

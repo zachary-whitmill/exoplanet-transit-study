@@ -1,7 +1,9 @@
+"""needs work"""
+
 import numpy as np
 import lightkurve as lk
 
-def calculate_snr(lc: lk.LightCurve, period: float, t0: float, duration: float) -> float:
+def calculate_snr(lc: lk.LightCurve, period: float, t0: float, duration: float):
     """
     Calculates the empirical transit Signal-to-Noise Ratio (SNR).
     SNR = (depth / sigma_out) * sqrt(N_in)

@@ -16,7 +16,7 @@ def filter_savitzky_golay(
     ):
 
     """
-    flatten a light curve using a Savitzky-Golay filter.        
+    flatten & denoise a light curve using a Savitzky-Golay filter.        
             
     parameters:
 
@@ -52,7 +52,7 @@ def filter_gaussian_process(
         input light curve.
     rho : float 
         characteristic timescale (period/decay) for the SHO kernel.
-    Q : float
+    Quality : float
         Quality factor for the SHO kernel (default 1/sqrt(2) for critically damped).
     sigma_upper / sigma_lower : float
         Outlier clipping thresholds (lower is set lenient to preserve transits).
@@ -78,7 +78,10 @@ def filter_gaussian_process(
 
     # Mask downward outliers (> 3 sigma below median) so the GP only fits
     # out-of-transit stellar variability and does not absorb transit dips
-    mad_std = 1.4826 * np.nanmedian(np.abs(y))
+    mad_std = 1.4826 * np.nanmedian(np.abs(y)) 
+    # 1.4826 is a conversion factor to change between Median Absolute Deviation (MAD)
+    # and the equivilent standard deviation for the data
+    
     oot_mask = y > (-3.0 * mad_std)
     if np.sum(oot_mask) < 10:
         oot_mask = np.ones_like(y, dtype=bool)

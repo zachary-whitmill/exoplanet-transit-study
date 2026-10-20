@@ -55,7 +55,17 @@ def run_bls(lc: lk.LightCurve, min_period: float = 0.5, max_period: float = 20.0
 
 def run_tls(lc: lk.LightCurve, min_period: float = 0.5, max_period: float = 20.0):
     """
+    Transit search using limb-darkened transit models via Transit Least Squares.
 
+    parameters:
+    lc: lightkurve.LightCurve
+        target light curve to search for transits.
+    min_period: float
+        minimum period to search for (in days).
+    max_period: float
+        maximum period to search for (in days).
+    returns: dict
+        dictionary containing the best-fit parameters and the TLS model object.
     """
 
     # start timer to measure runtime of the BLS search.
@@ -82,7 +92,7 @@ def run_tls(lc: lk.LightCurve, min_period: float = 0.5, max_period: float = 20.0
     model = tls(time_arr, flux, flux_err)
     results = model.power(period_min=min_period, period_max=max_period)
     
-    # measure the runtime of the TLS search.
+    # calculate the runtime of the TLS search.
     runtime_s = time.perf_counter() - t_start
 
     return {

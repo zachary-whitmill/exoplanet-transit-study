@@ -23,7 +23,7 @@ def filter_savitzky_golay(
     parameters:
 
     lc : lk.LightCurve
-        input light curve.
+        light curve of the object we want to process.
     window_length : int
         width of the window where polynomial is fitted (odd to ensure exact center)
     sigma_upper / sigma_lower : float
@@ -59,7 +59,7 @@ def filter_gaussian_process(
     """
 
     cleaned_lc = lc.remove_nans().remove_outliers(sigma_upper=sigma_upper,sigma_lower=sigma_lower)
-    cleaned_lc.sort("time")
+    cleaned_lc.sort("time") # sort reqired for celerite2
     
     x = np.array(cleaned_lc.time.value, dtype=float)
     flux = np.array(cleaned_lc.flux.value, dtype=float)

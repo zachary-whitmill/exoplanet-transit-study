@@ -36,7 +36,7 @@ def run_bls(lc: lk.LightCurve, min_period: float = 0.5, max_period: float = 20.0
     bls_model = lc.to_periodogram(method='bls', period=period_grid, duration=duration_grid)
 
     # measure the runtime of the BLS search.
-    runtime_s = time.perf_counter() - t_start
+    runtime = time.perf_counter() - t_start
 
     # compute the Signal Detection Efficiency (SDE), the significance of the detected signal.
     power = np.asarray(bls_model.power.value, dtype=float)
@@ -49,7 +49,7 @@ def run_bls(lc: lk.LightCurve, min_period: float = 0.5, max_period: float = 20.0
         "duration": float(bls_model.duration_at_max_power.value),
         "depth": float(bls_model.depth_at_max_power.value),
         "sde": sde,
-        "runtime_s": runtime_s,
+        "runtime": runtime,
         "model": bls_model
     }
 
@@ -93,7 +93,7 @@ def run_tls(lc: lk.LightCurve, min_period: float = 0.5, max_period: float = 20.0
     results = model.power(period_min=min_period, period_max=max_period)
     
     # calculate the runtime of the TLS search.
-    runtime_s = time.perf_counter() - t_start
+    runtime = time.perf_counter() - t_start
 
     return {
         "period": float(results.period),
@@ -101,6 +101,6 @@ def run_tls(lc: lk.LightCurve, min_period: float = 0.5, max_period: float = 20.0
         "duration": float(results.duration),
         "depth": float(1.0 - results.depth),
         "sde": float(results.SDE),
-        "runtime_s": runtime_s,
+        "runtime": runtime,
         "model": results
     }

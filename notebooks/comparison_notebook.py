@@ -1,5 +1,9 @@
 """End-to-end comparison script for SG vs GP detrending and BLS vs TLS transit searches."""
 
+# oktopus warning bug from lightkurve (check github issue #1452)
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
 import time
 import matplotlib.pyplot as plt
 from src.ingestion import download_lightcurve

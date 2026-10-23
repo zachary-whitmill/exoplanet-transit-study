@@ -33,7 +33,7 @@ def run_bls(lc: lk.LightCurve, min_period: float = 0.5, max_period: float = 20.0
     duration_grid = np.linspace(0.02, min(0.25, min_period * 0.8), 15)
 
     # run the BLS model 
-    bls_model = lc.to_periodogram(method='bls', period=period_grid, duration=duration_grid)
+    bls_model = lc.to_periodogram(method='bls', period=period_grid, duration=duration_grid, frequency_factor=10000)
 
     # measure the runtime of the BLS search.
     runtime = time.perf_counter() - t_start

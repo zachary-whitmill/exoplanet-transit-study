@@ -33,7 +33,7 @@ def download_lightcurve(target_name: str, cache_dir: str = "data", exptime: int 
         raise ValueError(f"No light curve data found for target: {target_name}")
 
     # download, stitch, and remove NaNs from the light curve data
-    lc = search_result.download_all().stitch().remove_nans()
+    lc = search_result[0].download().remove_nans().normalize()
     
     # save to cache
     lc.to_fits(cache_path, overwrite=True)

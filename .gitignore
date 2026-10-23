@@ -1,4 +1,5 @@
 /data
 /notes
-/__pycache__
 /.venv
+**/__pycache__
+/.pytest_cache

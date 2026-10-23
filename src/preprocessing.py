@@ -65,8 +65,8 @@ def filter_gaussian_process(
     flux = np.array(cleaned_lc.flux.value, dtype=float)
 
     # Normalize uncertainties; celerite2 requires positive, finite errors.
-    if cleaned_lc.flux_err is not None:
-        yerr = cleaned_lc.flux_err.value
+    if cleaned_lc.flux_err is not None and not np.all(np.isnan(cleaned_lc.flux_err.value)):
+        yerr = np.array(cleaned_lc.flux_err.value, dtype=float)
         yerr = np.nan_to_num(yerr, nan=np.nanmedian(yerr))
         yerr[yerr <= 0] = np.nanmedian(yerr)
     else:

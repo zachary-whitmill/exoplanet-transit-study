@@ -1,0 +1,6 @@
+numpy
+matplotlib
+lightkurve
+celerite2
+transitleastsquares
+pytest

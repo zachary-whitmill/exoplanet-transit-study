@@ -35,8 +35,8 @@ def download_lightcurve(target_name: str, cache_dir: str = "data", exptime: int 
     # Download, stitch, and remove NaNs from the light curve data
     lc = search_result[0].download().remove_nans().normalize()
     
-    # Dave to cache
+    # Save to cache
     lc.to_fits(cache_path, overwrite=True)
     print(f"Successfully downloaded and cached to {cache_path}")
-    
+
     return lc

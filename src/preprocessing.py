@@ -6,10 +6,22 @@ import numpy as np
 import lightkurve as lk
 import celerite2 as c2
 from celerite2 import terms
+from scipy.stats import median_abs_deviation
 
-# Celerite 2 is a library that allows for the application of a gaussian process filter 
-# .terms is a module that contains a libary of patterns (called kernals) so there is a kernal for each type of pattern 
+# Celerite 2 is a library that allows for the application of a gaussian process filter
+# .terms is a module that contains a libary of patterns (called kernals) so there is a kernal for each type of pattern
 # such as ocillations, rotations, smooth trends (exponential)
+
+
+# Fixed edge case where <= 0 values previously biased np.nanmedian before replacement.
+def clean_flux_err(lc: lk.LightCurve):
+    """Returns positive, finite flux uncertainties (imputing bad entries with the valid median), or None."""
+    if lc.flux_err is None:
+        return None
+    err = np.asarray(lc.flux_err.value, dtype=float)
+    valid = np.isfinite(err) & (err > 0)
+    return np.where(valid, err, np.median(err[valid])) if np.any(valid) else None
+
 
 def filter_savitzky_golay(
     lc: lk.LightCurve,
@@ -18,23 +30,23 @@ def filter_savitzky_golay(
     sigma_upper: float = 5.0,
     sigma_lower: float = 20.0,
 ):
-
     """
-    Flatten & denoise a light curve using a Savitzky-Golay filter.        
-            
+    Flatten & denoise a light curve using a Savitzky-Golay filter.
+
     Parameters:
 
     lc : lk.LightCurve
         Light curve of the object we want to process.
     window_length : int
-        Width of the window where polynomial is fitted (odd to ensure exact center)
+        Width of the window where polynomial is fitted (odd to ensure exact center).
     sigma_upper / sigma_lower : float
         Outlier clipping thresholds (lower is set lenient to preserve transits).
     """
 
-    cleaned_lc = lc.remove_nans().remove_outliers(sigma_upper=sigma_upper,sigma_lower=sigma_lower)
+    cleaned_lc = lc.remove_nans().remove_outliers(sigma_upper=sigma_upper, sigma_lower=sigma_lower)
     flattened_lc = cleaned_lc.flatten(window_length=window_length, polyorder=polynomial_order)
     return flattened_lc
+
 
 def filter_gaussian_process(
     lc: lk.LightCurve,
@@ -43,7 +55,6 @@ def filter_gaussian_process(
     sigma_upper: float = 5.0,
     sigma_lower: float = 20.0,
 ):
-
     """
     Flatten a light curve using Gaussian Process (GP) detrending via celerite2.
     GP regression often outperforms SG in accuracy due to GP incorporating probability and covariance
@@ -52,7 +63,7 @@ def filter_gaussian_process(
 
     lc : lk.LightCurve
         Input light curve.
-    rho : float 
+    rho : float
         Characteristic timescale (period/decay) for the SHO kernel.
     Quality : float
         Quality factor for the SHO kernel (default 1/sqrt(2) for critically damped).
@@ -60,18 +71,13 @@ def filter_gaussian_process(
         Outlier clipping thresholds (lower is set lenient to preserve transits).
     """
 
-    cleaned_lc = lc.remove_nans().remove_outliers(sigma_upper=sigma_upper,sigma_lower=sigma_lower)
-    cleaned_lc.sort("time") # Sort reqired for celerite2
-    
+    cleaned_lc = lc.remove_nans().remove_outliers(sigma_upper=sigma_upper, sigma_lower=sigma_lower)
+    cleaned_lc.sort("time")  # Sort reqired for celerite2
+
     x = np.array(cleaned_lc.time.value, dtype=float)
     flux = np.array(cleaned_lc.flux.value, dtype=float)
-
-    # Normalize uncertainties; celerite2 requires positive, finite errors.
-    if cleaned_lc.flux_err is not None and not np.all(np.isnan(cleaned_lc.flux_err.value)):
-        yerr = np.array(cleaned_lc.flux_err.value, dtype=float)
-        yerr = np.nan_to_num(yerr, nan=np.nanmedian(yerr))
-        yerr[yerr <= 0] = np.nanmedian(yerr)
-    else:
+    yerr = clean_flux_err(cleaned_lc)
+    if yerr is None:
         yerr = np.full_like(flux, np.nanstd(flux))
 
     # Mean-center the flux for GP modeling
@@ -80,17 +86,17 @@ def filter_gaussian_process(
 
     # Mask downward outliers (> 3 sigma below median) so the GP only fits
     # out-of-transit stellar variability and does not absorb transit dips
-    mad_std = 1.4826 * np.nanmedian(np.abs(y)) 
-    # 1.4826 is a conversion factor to change between Median Absolute Deviation (MAD)
-    # and the equivilent standard deviation for the data
-    
+    # Replaced manual 1.4826 * MAD calculation with scipy.stats.median_abs_deviation(scale="normal").
+    mad_std = median_abs_deviation(y, scale="normal", nan_policy="omit")
+
     oot_mask = y > (-3.0 * mad_std)
     if np.sum(oot_mask) < 10:
         oot_mask = np.ones_like(y, dtype=bool)
 
     # Estimate white-noise jitter from point-to-point scatter and add to diagonal variance
     # (In celerite2, diagonal jitter is passed via `diag` in gp.compute rather than a separate JitterTerm)
-    jitter = 1.4826 * np.nanmedian(np.abs(np.diff(y[oot_mask]))) / np.sqrt(2.0)
+    # Replaced manual 1.4826 * MAD calculation with scipy.stats.median_abs_deviation(scale="normal").
+    jitter = median_abs_deviation(np.diff(y[oot_mask]), scale="normal", nan_policy="omit") / np.sqrt(2.0)
     diag = yerr**2 + jitter**2
 
     # Initialize celerite2 SHO kernel and condition only on out-of-transit points

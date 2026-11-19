@@ -5,22 +5,23 @@ Module for downloading and saving transit light curves using Lightkurve.
 import os
 import lightkurve as lk
 
+
 def download_lightcurve(target_name: str, cache_dir: str = "data", exptime: int = 120):
     """
     Downloads and caches the light curve data for a specific exoplanet transit event.
-    
+
     Parameters:
     target_name: str
         Name of the host star containing the transiting exoplanet on the MAST archive
-    chache_dir: str
+    cache_dir: str
         Defines the location where downloaded lightcurves are stored
     exptime: int
-        Defines the duration in seconds of the transit requested from the archive
+        Exposure time (cadence) in seconds requested from the archive
     """
 
-    os.makedirs(cache_dir, exist_ok=True) # Creating cache directory if it doesn't exist
+    os.makedirs(cache_dir, exist_ok=True)  # Creating cache directory if it doesn't exist
 
-    clean_name = target_name.replace(" ", "_").lower()  # Clean the target name for file naming
+    clean_name = target_name.replace(" ", "_").lower()  # Clean the target name for safe file naming
     cache_path = os.path.join(cache_dir, f"{clean_name}_lightcurve.fits")
 
     if os.path.exists(cache_path):
@@ -32,9 +33,9 @@ def download_lightcurve(target_name: str, cache_dir: str = "data", exptime: int 
     if len(search_result) == 0:
         raise ValueError(f"No light curve data found for target: {target_name}")
 
-    # Download, stitch, and remove NaNs from the light curve data
+    # Download, remove NaNs, and normalize the light curve data
     lc = search_result[0].download().remove_nans().normalize()
-    
+
     # Save to cache
     lc.to_fits(cache_path, overwrite=True)
     print(f"Successfully downloaded and cached to {cache_path}")

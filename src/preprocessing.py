@@ -1,11 +1,13 @@
-"""Module for preprocessing light curves using Gaussian process and savitzky-golay filtering techniques."""
+"""
+Module for preprocessing light curves using Gaussian process and savitzky-golay filtering techniques.
+"""
 
 import numpy as np
 import lightkurve as lk
 import celerite2 as c2
 from celerite2 import terms
 
-# celerite 2 is a library that allows for the application of a gaussian process filter 
+# Celerite 2 is a library that allows for the application of a gaussian process filter 
 # .terms is a module that contains a libary of patterns (called kernals) so there is a kernal for each type of pattern 
 # such as ocillations, rotations, smooth trends (exponential)
 
@@ -15,17 +17,17 @@ def filter_savitzky_golay(
     polynomial_order: int = 2,
     sigma_upper: float = 5.0,
     sigma_lower: float = 20.0,
-    ):
+):
 
     """
-    flatten & denoise a light curve using a Savitzky-Golay filter.        
+    Flatten & denoise a light curve using a Savitzky-Golay filter.        
             
-    parameters:
+    Parameters:
 
     lc : lk.LightCurve
-        light curve of the object we want to process.
+        Light curve of the object we want to process.
     window_length : int
-        width of the window where polynomial is fitted (odd to ensure exact center)
+        Width of the window where polynomial is fitted (odd to ensure exact center)
     sigma_upper / sigma_lower : float
         Outlier clipping thresholds (lower is set lenient to preserve transits).
     """
@@ -40,18 +42,18 @@ def filter_gaussian_process(
     Quality: float = 1.0 / np.sqrt(2.0),
     sigma_upper: float = 5.0,
     sigma_lower: float = 20.0,
-    ):
+):
 
     """
-    flatten a light curve using Gaussian Process (GP) detrending via celerite2.
+    Flatten a light curve using Gaussian Process (GP) detrending via celerite2.
     GP regression often outperforms SG in accuracy due to GP incorporating probability and covariance
 
-    parameters:
+    Parameters:
 
     lc : lk.LightCurve
-        input light curve.
+        Input light curve.
     rho : float 
-        characteristic timescale (period/decay) for the SHO kernel.
+        Characteristic timescale (period/decay) for the SHO kernel.
     Quality : float
         Quality factor for the SHO kernel (default 1/sqrt(2) for critically damped).
     sigma_upper / sigma_lower : float
@@ -59,7 +61,7 @@ def filter_gaussian_process(
     """
 
     cleaned_lc = lc.remove_nans().remove_outliers(sigma_upper=sigma_upper,sigma_lower=sigma_lower)
-    cleaned_lc.sort("time") # sort reqired for celerite2
+    cleaned_lc.sort("time") # Sort reqired for celerite2
     
     x = np.array(cleaned_lc.time.value, dtype=float)
     flux = np.array(cleaned_lc.flux.value, dtype=float)

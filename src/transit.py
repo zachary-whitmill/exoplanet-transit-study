@@ -6,7 +6,8 @@ import time
 import lightkurve as lk
 import numpy as np
 from transitleastsquares import transitleastsquares as tls
-from transitleastsquares.warmup import ensure_compiled # warms up numba compiler -> accurate runtime calc
+from transitleastsquares.warmup import ensure_compiled  # warms up numba compiler -> accurate runtime calc
+from src.preprocessing import clean_flux_err
 
 
 def run_bls(
@@ -39,7 +40,7 @@ def run_bls(
     # phase sliping where trial periods do not align with the true period resulting
     # in the phase folded light curve being smeared
     freq_grid = np.linspace(1.0 / max_period, 1.0 / min_period, n_periods)
-    period_grid = 1.0 / freq_grid[::-1]  # ascending period order
+    period_grid = 1.0 / freq_grid[::-1]  # Ascending period order
 
     # 15 trial transit durations bounded below min_period
     duration_grid = np.linspace(0.02, min(0.25, min_period * 0.8), 15)
@@ -90,23 +91,15 @@ def run_tls(
     # compilation does not distort the first run's runtime measurement.
     ensure_compiled(None, verbose=False)
 
-    # Start timer to measure runtime of the BLS search.
+
+    # Start timer to measure runtime of the TLS search.
     start_timer = time.perf_counter()
 
-    # Extract arrays from LightCurve object into inputs accepted by TLS
+    # Added remove_nans() and used helper fn clean_flux_err
+    lc = lc.remove_nans()
     time_arr = np.asarray(lc.time.value, dtype=float)
     flux = np.asarray(lc.flux.value, dtype=float)
-
-    if lc.flux_err is not None:
-        flux_err = np.asarray(lc.flux_err.value, dtype=float)
-        if np.all(np.isnan(flux_err)):
-            flux_err = None
-        else:
-            med_err = np.nanmedian(flux_err)
-            flux_err = np.nan_to_num(flux_err, nan=med_err)
-            flux_err[flux_err <= 0] = med_err
-    else:
-        flux_err = None
+    flux_err = clean_flux_err(lc)
 
     # Run TLS model with oversampling for finer period resolution
     model = tls(time_arr, flux, flux_err)
